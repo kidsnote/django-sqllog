@@ -136,3 +136,37 @@ SQLLOG = {
     [default]
     enabled=True
     ```
+* Logstash로 직접 로깅할 경우 아래와 같이 설정합니다.
+  ```bash
+  SQLLOG = {
+      'ENABLED': os.getenv('SQLLOG_ENABLED', True),
+      'ENABLE_SENTRY': os.getenv('SQLLOG_ENABLE_SENTRY', False),
+      'CONFIG_NAME': 'testing',
+      'ENV_FILE_PATH': f'{BASE_DIR}/runtime/sqllog.ini',
+      'LOGGING': {
+          'formatters': {
+              'sqllog': {
+                  'format': '%(levelname)s %(asctime)s %(message)s',
+              },
+          },
+          'handlers': {
+              'sqllog': {
+                  'class': 'logstash.LogstashHandler',
+                  'host': 'localhost',
+                  'port': 5959,
+              },
+          },
+          'loggers': {
+              'sqllog': {
+                  'handlers': ['sqllog'],
+                  'level': 'INFO',
+                  'propagate': False,
+              },
+          }
+      }
+  }
+  ```
+  `logstash.LogstashHandler`는 `logstash.UDPLogstashHandler` 와 동일합니다. 
+  `logstash.TCPLogstashHandler`로 변경할 수 있습니다
+  ([참고](https://github.com/vklochan/python-logstash/blob/master/logstash/handler_udp.py)).
+  
