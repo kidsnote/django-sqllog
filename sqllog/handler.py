@@ -51,7 +51,7 @@ class EnvFileEventHandler(FileSystemEventHandler):
         try:
             conf = configparser.ConfigParser()
             conf.read(self.obser_file)
-            enabled = conf.getboolean('default', 'enabled')
+            enabled = conf.getboolean('default', 'enabled', fallback=False)
         except Exception as e:
             # Reporting and disable logging when unknown exception raised.
             exception(e)
