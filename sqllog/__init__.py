@@ -53,6 +53,9 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             # Report for warning if the params is of unexpected data type.
             message(f'Unknown data type: {type(params)=}')
 
+    traceback_length = settings.SQLLOG.get('TRACEBACK_MAX_LENGTH', len(tbs))
+    tbs = tbs[:traceback_length]
+
     sqllog_logger.info(json.dumps(
         dict(
             sql=sql,

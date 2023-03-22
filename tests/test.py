@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import time
+import random
 
 from django.conf import settings
 from django.db.backends.base import base
@@ -118,6 +119,57 @@ class PrimaryTests(BaseTestCase):
             obj['sql'],
             'SELECT "tests_category"."id", "tests_category"."title" FROM "tests_category" LIMIT 10'
         )
+
+        # Restore past state.
+        conf.set('default', 'enabled', str(enabled))
+        with open(env_path, 'w') as fp:
+            conf.write(fp)
+
+
+    def test_traceback_max_length_option(self):
+        env_path = settings.SQLLOG['ENV_FILE_PATH']
+        log_path = settings.SQLLOG['LOGGING']['handlers']['sqllog_file'].get('filename')
+
+        if not log_path:
+            return
+
+        # File existence check.
+        self.assertTrue(os.path.exists(env_path))
+
+        conf = configparser.ConfigParser()
+        conf.read(env_path)
+        # Remember current state for restoration.
+        enabled = conf.getboolean('default', 'enabled')
+        # Turn off logging!
+        conf.set('default', 'enabled', 'true')
+        # Save file to trigger logging disable event.
+        with open(env_path, 'w') as fp:
+            conf.write(fp)
+
+        # Truncate log file.
+        open(log_path, 'w').close()
+
+        # Wait for the sqllog enable event by file changing.
+        while True:
+            if getattr(base.BaseDatabaseWrapper, 'force_debug_cursor', False):
+                break
+            print('I am waiting...')
+            time.sleep(1)
+
+        TRACEBACK_MAX_LENGTH = random.randint(1, 20)
+        settings.SQLLOG['TRACEBACK_MAX_LENGTH'] = TRACEBACK_MAX_LENGTH
+
+        # Send the SQL query to the database server using the print statement.
+        print(Category.objects.all()[0:10])
+        print(Post.objects.all())
+        print(Post.objects.select_related('category'))
+
+        # Since logging is enabled, the log file should have contents.
+        lines = open(log_path).readlines()
+
+        for line in lines:
+            obj = json.loads(line.split(' ', 3)[-1])
+            assert len(obj['traceback']) <= TRACEBACK_MAX_LENGTH
 
         # Restore past state.
         conf.set('default', 'enabled', str(enabled))

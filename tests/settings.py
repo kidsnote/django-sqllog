@@ -63,6 +63,7 @@ SQLLOG = {
     'ENABLE_SENTRY': os.getenv('SQLLOG_ENABLE_SENTRY', False),
     'CONFIG_NAME': 'testing',
     'ENV_FILE_PATH': f'{BASE_DIR}/runtime/sqllog.ini',
+    'TRACEBACK_MAX_LENGTH': 10000,
     'LOGGING': {
         'formatters': {
             'sqllog': {
