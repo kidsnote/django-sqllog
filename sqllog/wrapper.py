@@ -1,3 +1,5 @@
+import random
+
 from abc import ABC
 from contextlib import contextmanager
 from time import monotonic
@@ -8,10 +10,11 @@ from django.db.backends.base import base
 
 class BaseDatabaseWrapper(base.BaseDatabaseWrapper, ABC):
     force_debug_cursor = False
+    sample_rate = 0
 
     @property
     def queries_logged(self):
-        return BaseDatabaseWrapper.force_debug_cursor
+        return BaseDatabaseWrapper.force_debug_cursor and (random.random() < BaseDatabaseWrapper.sample_rate)
 
 
 class CursorDebugWrapper(utils.CursorWrapper):

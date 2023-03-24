@@ -136,6 +136,7 @@ SQLLOG = {
     ```conf
     [default]
     enabled=True
+    sample_rate=1
     ```
 * Logstash로 직접 로깅할 경우 아래와 같이 설정합니다.
   ```bash

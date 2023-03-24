@@ -25,6 +25,7 @@ class EnvFileEventHandler(FileSystemEventHandler):
                 conf = configparser.ConfigParser()
                 conf['default'] = {
                     'enabled': False,
+                    'sample_rate': 0,
                 }
                 conf.write(f)
 
@@ -52,9 +53,11 @@ class EnvFileEventHandler(FileSystemEventHandler):
             conf = configparser.ConfigParser()
             conf.read(self.obser_file)
             enabled = conf.getboolean('default', 'enabled', fallback=False)
+            sample_rate = conf.getfloat('default', 'sample_rate', fallback=0)
         except Exception as e:
             # Reporting and disable logging when unknown exception raised.
             exception(e)
             enabled = False
+            sample_rate = 0
 
-        self.event_handler and self.event_handler(event, enabled)
+        self.event_handler and self.event_handler(event, enabled, sample_rate)

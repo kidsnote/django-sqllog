@@ -94,3 +94,36 @@ class TracebackTests(SerializeTestCase):
         for log in logs:
             obj = json.loads(log.split(' ', 3)[-1])
             assert len(obj['traceback']) <= traceback_max_length
+
+
+class SampleRateTests(SerializeTestCase):
+    def test_sample_rate(self):
+        # Set sample rate.
+        sample_rate = random.random()
+        # Set how many queries to generate.
+        query_count = random.randint(10, 30)
+        # Set seed value for random reproduction.
+        seed = time.time()
+
+        # Turn off logging.
+        self.save_config(
+            enabled=True,
+            sample_rate=sample_rate,
+        )
+
+        print(f'{query_count=},{sample_rate=}')
+
+        random.seed(seed)
+        expected_count = sum(random.random() < sample_rate for _ in range(query_count))
+
+        random.seed(seed)
+        for i in range(query_count):
+            print(Post.objects.all(), file=DEVNULL)
+
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
+
+        # Read logs.
+        logs = self.read_log_lines()
+
+        self.assertEqual(len(logs), expected_count, logs)
