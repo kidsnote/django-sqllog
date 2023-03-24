@@ -1,177 +1,96 @@
-import configparser
-import datetime
 import json
-import os
-import time
 import random
+import time
 
 from django.conf import settings
-from django.db.backends.base import base
 
 from .models import (
-    Category,
-    Post,
+    Post, Category,
 )
-from .utils import BaseTestCase
+from .utils import SerializeTestCase
 
-SQLLOG = settings.SQLLOG
+DEVNULL = open('/dev/null', 'w')
 
 
-class PrimaryTests(BaseTestCase):
-    def test_now(self):
-        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-        print(now)
-
+class DisableTests(SerializeTestCase):
     def test_empty(self):
-        old = getattr(base.BaseDatabaseWrapper, 'force_debug_cursor', False)
-        setattr(base.BaseDatabaseWrapper, 'force_debug_cursor', True)
         self.assertEqual(
             0,
             Category.objects.count(),
             Post.objects.count(),
         )
-        setattr(base.BaseDatabaseWrapper, 'force_debug_cursor', old)
 
     def test_disable_logging_by_modifying_env_file(self):
-        env_path = settings.SQLLOG['ENV_FILE_PATH']
-        log_path = settings.SQLLOG['LOGGING']['handlers']['sqllog_file'].get('filename')
+        # Turn off logging.
+        self.save_config(
+            enabled=False,
+            sample_rate=1,
+        )
 
-        if not log_path:
-            return
+        # Make SQL.
+        print(Category.objects.all(), file=DEVNULL)
 
-        # File existence check.
-        self.assertTrue(os.path.exists(env_path))
-
-        conf = configparser.ConfigParser()
-        conf.read(env_path)
-        # Remember current state for restoration.
-        enabled = conf.getboolean('default', 'enabled')
-        # Turn off logging!
-        conf.set('default', 'enabled', 'false')
-        # Save file to trigger logging disable event.
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
-
-        # Truncate log file.
-        open(log_path, 'w').close()
-
-        # Send the SQL query to the database server using the print statement.
-        print(Category.objects.all())
-
-        # Wait for the sqllog enable event by file changing.
-        while True:
-            if not getattr(base.BaseDatabaseWrapper, 'force_debug_cursor', True):
-                break
-            print('I am waiting...')
-            time.sleep(1)
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
 
         # Since logging is disabled, the log file should be empty.
-        self.assertTrue(len(open(log_path).read()) == 0)
+        log = self.read_log()
+        self.assertTrue(not log, log)
 
-        # Restore past state.
-        conf.set('default', 'enabled', str(enabled))
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
 
+class EnableTests(SerializeTestCase):
     def test_enable_logging_by_modifying_env_file(self):
-        env_path = settings.SQLLOG['ENV_FILE_PATH']
-        log_path = settings.SQLLOG['LOGGING']['handlers']['sqllog_file'].get('filename')
+        # Turn on logging.
+        self.save_config(
+            enabled=True,
+            sample_rate=1,
+        )
 
-        if not log_path:
-            return
+        # Make SQL.
+        print(Category.objects.all()[0:10], file=DEVNULL)
 
-        # File existence check.
-        self.assertTrue(os.path.exists(env_path))
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
 
-        conf = configparser.ConfigParser()
-        conf.read(env_path)
-        # Remember current state for restoration.
-        enabled = conf.getboolean('default', 'enabled')
-        # Turn off logging!
-        conf.set('default', 'enabled', 'true')
-        # Save file to trigger logging disable event.
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
+        # Read logs.
+        logs = self.read_log_lines()
 
-        # Truncate log file.
-        open(log_path, 'w').close()
+        # There must be only one log message.
+        self.assertEqual(len(logs), 1, logs)
 
-        # Wait for the sqllog enable event by file changing.
-        while True:
-            if getattr(base.BaseDatabaseWrapper, 'force_debug_cursor', False):
-                break
-            print('I am waiting...')
-            time.sleep(1)
-
-        # Send the SQL query to the database server using the print statement.
-        print(Category.objects.all()[0:10])
-
-        # Since logging is enabled, the log file should have contents.
-        lines = open(log_path).readlines()
-        # Remove empty line.
-        lines = [x for x in lines if x]
-        # There muse be only one leg message in the log file.
-        self.assertEqual(len(lines), 1)
-        # Assume that the log message starts at the 29th character, and log messages are json data type.
-        obj = json.loads(lines[0][29:])
+        # Extract only SQL from the first line.
+        sql = json.loads(logs[0][29:])['sql']
 
         self.assertEquals(
-            obj['sql'],
+            sql,
             'SELECT "tests_category"."id", "tests_category"."title" FROM "tests_category" LIMIT 10'
         )
 
-        # Restore past state.
-        conf.set('default', 'enabled', str(enabled))
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
 
-
+class TracebackTests(SerializeTestCase):
     def test_traceback_max_length_option(self):
-        env_path = settings.SQLLOG['ENV_FILE_PATH']
-        log_path = settings.SQLLOG['LOGGING']['handlers']['sqllog_file'].get('filename')
+        # Turn on logging.
+        self.save_config(
+            enabled=True,
+            sample_rate=1,
+        )
 
-        if not log_path:
-            return
+        # Set configs.
+        random.seed(time.time())
+        traceback_max_length = random.randint(1, 20)
+        settings.SQLLOG['TRACEBACK_MAX_LENGTH'] = traceback_max_length
 
-        # File existence check.
-        self.assertTrue(os.path.exists(env_path))
+        # Make SQL.
+        print(Category.objects.all()[0:10], file=DEVNULL)
+        print(Post.objects.all(), file=DEVNULL)
+        print(Post.objects.select_related('category'), file=DEVNULL)
 
-        conf = configparser.ConfigParser()
-        conf.read(env_path)
-        # Remember current state for restoration.
-        enabled = conf.getboolean('default', 'enabled')
-        # Turn off logging!
-        conf.set('default', 'enabled', 'true')
-        # Save file to trigger logging disable event.
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
 
-        # Truncate log file.
-        open(log_path, 'w').close()
+        # Read logs.
+        logs = self.read_log_lines()
 
-        # Wait for the sqllog enable event by file changing.
-        while True:
-            if getattr(base.BaseDatabaseWrapper, 'force_debug_cursor', False):
-                break
-            print('I am waiting...')
-            time.sleep(1)
-
-        TRACEBACK_MAX_LENGTH = random.randint(1, 20)
-        settings.SQLLOG['TRACEBACK_MAX_LENGTH'] = TRACEBACK_MAX_LENGTH
-
-        # Send the SQL query to the database server using the print statement.
-        print(Category.objects.all()[0:10])
-        print(Post.objects.all())
-        print(Post.objects.select_related('category'))
-
-        # Since logging is enabled, the log file should have contents.
-        lines = open(log_path).readlines()
-
-        for line in lines:
-            obj = json.loads(line.split(' ', 3)[-1])
-            assert len(obj['traceback']) <= TRACEBACK_MAX_LENGTH
-
-        # Restore past state.
-        conf.set('default', 'enabled', str(enabled))
-        with open(env_path, 'w') as fp:
-            conf.write(fp)
+        for log in logs:
+            obj = json.loads(log.split(' ', 3)[-1])
+            assert len(obj['traceback']) <= traceback_max_length
