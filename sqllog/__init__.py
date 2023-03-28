@@ -77,9 +77,9 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     ))
 
 
-def sqllog_env_file_change_handler(event, enabled, sample_rate):
-    BaseDatabaseWrapper.force_debug_cursor = enabled
-    BaseDatabaseWrapper.sample_rate = sample_rate
+def sqllog_env_file_change_handler(event, env):
+    BaseDatabaseWrapper.force_debug_cursor = env['enabled']
+    BaseDatabaseWrapper.sample_rate = env['sample_rate']
 
 
 if getattr(settings, 'SQLLOG', {}):

@@ -1,4 +1,3 @@
-import configparser
 import os
 
 from watchdog.events import (
@@ -10,6 +9,12 @@ from watchdog.events import (
 )
 
 from .capture import exception
+from .config import Config
+
+DEFAULT_ENV = dict(
+    enabled=False,
+    sample_rate=0,
+)
 
 
 class EnvFileEventHandler(FileSystemEventHandler):
@@ -22,11 +27,9 @@ class EnvFileEventHandler(FileSystemEventHandler):
         if not os.path.exists(self.obser_file):
             os.makedirs(os.path.dirname(self.obser_file), exist_ok=True)
             with open(self.obser_file, 'w') as f:
-                conf = configparser.ConfigParser()
-                conf['default'] = {
-                    'enabled': False,
-                    'sample_rate': 0,
-                }
+                conf = Config()
+                # noinspection PyTypeChecker
+                conf['default'] = DEFAULT_ENV
                 conf.write(f)
 
         self.invoke()
@@ -48,16 +51,17 @@ class EnvFileEventHandler(FileSystemEventHandler):
         self.invoke(event)
 
     def invoke(self, event=None):
+        env = DEFAULT_ENV.copy()
         # noinspection PyBroadException
         try:
-            conf = configparser.ConfigParser()
+            conf = Config()
             conf.read(self.obser_file)
-            enabled = conf.getboolean('default', 'enabled', fallback=False)
-            sample_rate = conf.getfloat('default', 'sample_rate', fallback=0)
+            env.update(dict(
+                enabled=conf.get_value(bool, 'default', 'enabled', default=False),
+                sample_rate=conf.get_value(float, 'default', 'sample_rate', default=0),
+            ))
         except Exception as e:
             # Reporting and disable logging when unknown exception raised.
             exception(e)
-            enabled = False
-            sample_rate = 0
 
-        self.event_handler and self.event_handler(event, enabled, sample_rate)
+        self.event_handler and self.event_handler(event, env)

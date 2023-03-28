@@ -1,4 +1,3 @@
-import configparser
 import os
 import time
 
@@ -6,6 +5,8 @@ from django.conf import settings
 from django.db.backends.base import base
 from django.test import TestCase
 from django.test.testcases import SerializeMixin
+
+from sqllog.config import Config
 
 
 class BaseTestCase(TestCase):
@@ -23,7 +24,7 @@ class BaseTestCase(TestCase):
         self.truncate_log()
 
         # Read config.
-        self.conf = configparser.ConfigParser(default_section='default')
+        self.conf = Config()
         self.conf.read(self.env_path)
 
     def tearDown(self):
