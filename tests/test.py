@@ -69,16 +69,16 @@ class EnableTests(SerializeTestCase):
 
 class TracebackTests(SerializeTestCase):
     def test_traceback_max_length_option(self):
-        # Turn on logging.
-        self.save_config(
-            enabled=True,
-            sample_rate=1,
-        )
-
         # Set configs.
         random.seed(time.time())
         traceback_max_length = random.randint(1, 20)
-        settings.SQLLOG['TRACEBACK_MAX_LENGTH'] = traceback_max_length
+
+        # Turn on logging
+        self.save_config(
+            enabled=True,
+            sample_rate=1,
+            max_traceback_strlen=traceback_max_length
+        )
 
         # Make SQL.
         print(Category.objects.all()[0:10], file=DEVNULL)

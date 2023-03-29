@@ -11,6 +11,7 @@ from django.db.backends.base import base
 class BaseDatabaseWrapper(base.BaseDatabaseWrapper, ABC):
     force_debug_cursor = False
     sample_rate = 0
+    max_traceback_strlen = None
 
     @property
     def queries_logged(self):

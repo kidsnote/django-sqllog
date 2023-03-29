@@ -53,8 +53,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             # Report for warning if the params is of unexpected data type.
             message(f'Unknown data type: {type(params)=}')
 
-    traceback_length = settings.SQLLOG.get('TRACEBACK_MAX_LENGTH', len(tbs))
-    tbs = tbs[:traceback_length]
+    tbs_strlen = len(tbs)
+    tbs = tbs[:cursor_wrapper.db.max_traceback_strlen]
 
     sqllog_logger.info(json.dumps(
         dict(
@@ -72,6 +72,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             pid=os.getpid(),
             tid=threading.get_ident(),
             native_tid=threading.get_native_id(),
+            traceback_strlen=tbs_strlen,
+            is_truncated_traceback=tbs_strlen > len(tbs),
         ),
         default=str,
     ))
@@ -80,6 +82,7 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
 def sqllog_env_file_change_handler(event, env):
     BaseDatabaseWrapper.force_debug_cursor = env['enabled']
     BaseDatabaseWrapper.sample_rate = env['sample_rate']
+    BaseDatabaseWrapper.max_traceback_strlen = env['max_traceback_strlen']
 
 
 if getattr(settings, 'SQLLOG', {}):
