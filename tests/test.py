@@ -127,3 +127,32 @@ class SampleRateTests(SerializeTestCase):
         logs = self.read_log_lines()
 
         self.assertEqual(len(logs), expected_count, logs)
+
+
+class SqlTests(SerializeTestCase):
+    def test_sql_max_length_option(self):
+        # Set configs.
+        random.seed(time.time())
+        max_sql_strlen = random.randint(1, 20)
+
+        # Turn on logging
+        self.save_config(
+            enabled=True,
+            sample_rate=1,
+            max_sql_strlen=max_sql_strlen,
+        )
+
+        # Make SQL.
+        print(Category.objects.all()[0:10], file=DEVNULL)
+        print(Post.objects.all(), file=DEVNULL)
+        print(Post.objects.select_related('category'), file=DEVNULL)
+
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
+
+        # Read logs.
+        logs = self.read_log_lines()
+
+        for log in logs:
+            obj = json.loads(log.split(' ', 3)[-1])
+            assert len(obj['sql']) <= max_sql_strlen

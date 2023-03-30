@@ -137,10 +137,15 @@ SQLLOG = {
     enabled=True
     sample_rate=1
     max_traceback_strlen=100
+    max_sql_strlen=
     ```
     * max_traceback_strlen
   
       기본값은 `None`입니다(Key/Value가 존재하지 않거나 `max_traceback_strlen=`와 같이 설정). traceback 필드의 최대 문자 수를 결정합니다. 
+
+    * max_sql_strlen
+
+      기본값은 `None`입니다. sql 필드의 최대 문자 수를 결정합니다.
 
 * Logstash로 직접 로깅할 경우 아래와 같이 설정합니다.
   ```bash

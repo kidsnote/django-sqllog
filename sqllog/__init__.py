@@ -56,6 +56,9 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     tbs_strlen = len(tbs)
     tbs = tbs[:cursor_wrapper.db.max_traceback_strlen]
 
+    sql_strlen = len(sql)
+    sql = sql[:cursor_wrapper.db.max_sql_strlen]
+
     sqllog_logger.info(json.dumps(
         dict(
             sql=sql,
@@ -74,6 +77,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             native_tid=threading.get_native_id(),
             traceback_strlen=tbs_strlen,
             is_truncated_traceback=tbs_strlen > len(tbs),
+            sql_strlen=sql_strlen,
+            is_truncated_sql=sql_strlen > len(sql),
         ),
         default=str,
     ))
@@ -83,6 +88,7 @@ def sqllog_env_file_change_handler(event, env):
     BaseDatabaseWrapper.force_debug_cursor = env['enabled']
     BaseDatabaseWrapper.sample_rate = env['sample_rate']
     BaseDatabaseWrapper.max_traceback_strlen = env['max_traceback_strlen']
+    BaseDatabaseWrapper.max_sql_strlen = env['max_sql_strlen']
 
 
 if getattr(settings, 'SQLLOG', {}):
