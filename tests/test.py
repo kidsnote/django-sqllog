@@ -2,8 +2,6 @@ import json
 import random
 import time
 
-from django.conf import settings
-
 from .models import (
     Post, Category,
 )

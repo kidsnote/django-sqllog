@@ -1,5 +1,4 @@
 import random
-
 from abc import ABC
 from contextlib import contextmanager
 from time import monotonic
