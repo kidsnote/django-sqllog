@@ -21,7 +21,7 @@ class CursorDebugWrapper(utils.CursorWrapper):
     sqllog_handler = None
 
     def execute(self, sql, params=None):
-        with self.notify(sql, params, use_last_executed_query=True):
+        with self.notify(sql, params):
             return super().execute(sql, params)
 
     def executemany(self, sql, param_list):
@@ -29,16 +29,15 @@ class CursorDebugWrapper(utils.CursorWrapper):
             return super().executemany(sql, param_list)
 
     @contextmanager
-    def notify(self, sql=None, params=None, use_last_executed_query=False, many=False):
+    def notify(self, sql=None, params=None, many=False):
         start = monotonic()
         try:
             yield
         finally:
+            sql = self.db.ops.last_executed_query(self.cursor, sql, params)
             duration = monotonic() - start
             self.sqllog_handler and self.sqllog_handler(
                 sql=sql,
-                params=params,
-                use_last_executed_query=use_last_executed_query,
                 many=many,
                 duration=duration,
             )

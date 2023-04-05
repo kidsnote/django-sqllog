@@ -22,7 +22,6 @@ sqllog_logger = None
 
 def sqllog_handler(cursor_wrapper, *args, **kwargs):
     sql = kwargs.get('sql')
-    params = kwargs.get('params')
     many = kwargs.get('many')
     duration = kwargs.get('duration')
 
@@ -45,14 +44,6 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
         exception(e)
         return
 
-    if params is not None:
-        # Expects the data type of params to be an enum such as list, set or tuple.
-        if isinstance(params, (list, set, tuple,)):
-            params = [str(x) for x in params]
-        else:
-            # Report for warning if the params is of unexpected data type.
-            message(f'Unknown data type: {type(params)=}')
-
     tbs_strlen = len(tbs)
     tbs = tbs[:cursor_wrapper.db.max_traceback_strlen]
 
@@ -62,7 +53,6 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     sqllog_logger.info(json.dumps(
         dict(
             sql=sql,
-            params=params,
             many=many,
             alias=cursor_wrapper.db.alias,
             duration=duration,
