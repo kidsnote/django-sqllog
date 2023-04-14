@@ -24,6 +24,7 @@ class DisableTests(SerializeTestCase):
         self.save_config(
             enabled=False,
             sample_rate=1,
+            max_sql_strlen=None,
         )
 
         # Make SQL.
@@ -43,6 +44,7 @@ class EnableTests(SerializeTestCase):
         self.save_config(
             enabled=True,
             sample_rate=1,
+            max_sql_strlen=None,
         )
 
         # Make SQL.
@@ -108,6 +110,7 @@ class SampleRateTests(SerializeTestCase):
         self.save_config(
             enabled=True,
             sample_rate=sample_rate,
+            max_sql_strlen=None,
         )
 
         print(f'{query_count=},{sample_rate=}')
