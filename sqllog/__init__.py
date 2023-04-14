@@ -13,7 +13,6 @@ from watchdog.observers import Observer
 from .callstack import CallStack
 from .capture import exception, message
 from .handler import EnvFileEventHandler
-from .parser import QueryParser
 from .wrapper import BaseDatabaseWrapper, CursorDebugWrapper
 
 THIS_MODULE_PATH = os.path.dirname(__file__)
@@ -28,21 +27,6 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     tbs = str(CallStack(
         lambda filename: not filename.startswith(THIS_MODULE_PATH) and filename.startswith(settings.BASE_DIR),
     ))
-
-    tables = None
-    generalized_query = None
-    # noinspection PyBroadException
-    try:
-        parsed_sql = QueryParser(sql)
-        tables = parsed_sql.tables
-        generalized_query = parsed_sql.generalize
-    except ValueError:
-        # HACK: Ignore sql parsing failures(unknown errors) to continue logging.
-        pass
-    except Exception as e:
-        # Reporting errors except sql parsing errors.
-        exception(e)
-        return
 
     tbs_strlen = len(tbs)
     tbs = tbs[:cursor_wrapper.db.max_traceback_strlen]
@@ -59,9 +43,6 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             config=settings.SQLLOG.get('CONFIG_NAME'),
             traceback=tbs,
             traceback_hash=md5(tbs.encode()).hexdigest(),
-            tables=tables,
-            generalized_sql=generalized_query,
-            generalized_sql_hash=generalized_query and md5(generalized_query.encode()).hexdigest(),
             pid=os.getpid(),
             tid=threading.get_ident(),
             native_tid=threading.get_native_id(),

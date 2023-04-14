@@ -44,18 +44,6 @@
 
   `traceback`의 MD5 해시값
 
-* tables
-
-  `sql`에 포함된 테이블명
-
-* generalized_sql
-
-  일반화된 쿼리문으로써 `표현`이 다른 쿼리라도 `형식`이 동일하면 같은 쿼리로 분류할 목적
-
-* generalized_sql_hash
-
-  `generalized_sql`의 MD5 해시값
-
 
 ## 4. 설치
 
