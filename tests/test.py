@@ -1,6 +1,7 @@
 import json
 import random
 import time
+from subprocess import Popen, PIPE
 
 from .models import (
     Post, Category,
@@ -154,3 +155,35 @@ class SqlTests(SerializeTestCase):
         for log in logs:
             obj = json.loads(log.split(' ', 3)[-1])
             assert len(obj['sql']) <= max_sql_strlen
+
+    def test_generalization(self):
+        # Turn on logging
+        self.save_config(
+            enabled=True,
+            sample_rate=1,
+            max_sql_strlen=None,
+        )
+
+        # Make SQL.
+        print(Category.objects.filter(title='noname'), file=DEVNULL)
+
+        # HACK: Wait for log messages to be written to the log file.
+        time.sleep(1)
+
+        # Read logs.
+        logs = self.read_log_lines()
+        log = logs[0]
+        obj = json.loads(log.split(' ', 3)[-1])
+        original_sql = obj['sql']
+        generalized_sql = obj['generalized_sql']
+
+        with Popen(['pt-fingerprint'], stdin=PIPE, stdout=PIPE) as p:
+            p.stdin.write(original_sql.encode('utf-8'))
+            p.stdin.write(b';\n')
+            p.stdin.flush()
+            desired_sql = p.stdout.readline().decode('utf-8').strip()
+
+        self.assertEqual(
+            generalized_sql,
+            desired_sql
+        )

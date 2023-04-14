@@ -13,6 +13,7 @@ from watchdog.observers import Observer
 from .callstack import CallStack
 from .capture import exception, message
 from .handler import EnvFileEventHandler
+from .sql import fingerprint
 from .wrapper import BaseDatabaseWrapper, CursorDebugWrapper
 
 THIS_MODULE_PATH = os.path.dirname(__file__)
@@ -27,6 +28,9 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     tbs = str(CallStack(
         lambda filename: not filename.startswith(THIS_MODULE_PATH) and filename.startswith(settings.BASE_DIR),
     ))
+
+    generalized_sql = fingerprint(sql)
+    generalized_sql_hash = generalized_sql and md5(generalized_sql.encode()).hexdigest()
 
     tbs_strlen = len(tbs)
     tbs = tbs[:cursor_wrapper.db.max_traceback_strlen]
@@ -43,6 +47,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             config=settings.SQLLOG.get('CONFIG_NAME'),
             traceback=tbs,
             traceback_hash=md5(tbs.encode()).hexdigest(),
+            generalized_sql=generalized_sql,
+            generalized_sql_hash=generalized_sql_hash,
             pid=os.getpid(),
             tid=threading.get_ident(),
             native_tid=threading.get_native_id(),
