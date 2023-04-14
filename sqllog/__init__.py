@@ -68,7 +68,7 @@ def sqllog_env_file_change_handler(event, env):
     BaseDatabaseWrapper.max_sql_strlen = env['max_sql_strlen']
 
 
-if getattr(settings, 'SQLLOG', {}):
+if getattr(settings, 'SQLLOG', {}).get('ENABLED', False):
     settings.LOGGING = settings.LOGGING or {
         'version': 1,
         'disable_existing_loggers': False,
