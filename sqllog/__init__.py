@@ -26,7 +26,7 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     duration = kwargs.get('duration')
 
     tbs = str(CallStack(
-        lambda filename: not filename.startswith(THIS_MODULE_PATH) and filename.startswith(settings.BASE_DIR),
+        lambda filename: not filename.startswith(THIS_MODULE_PATH) and filename.startswith(str(settings.BASE_DIR)),
     ))
 
     generalized_sql = fingerprint(sql)
