@@ -1,5 +1,9 @@
 # django-sqllog
 
+## 0. 주의
+이 저장소는 공개(public) 저장소입니다.  
+민감한 정보가 유출되지 않도록 주의 바랍니다.
+
 ## 1. 목적
 `django.db.connect`의 `cursor`를 통해 데이터베이스 서버에 전달되는 SQL Query를 로깅합니다.
 
