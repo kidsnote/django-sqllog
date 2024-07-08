@@ -64,7 +64,7 @@ class EnvFileEventHandler(FileSystemEventHandler):
                 enabled=conf.get_value(bool, 'default', 'enabled', default=False),
                 sample_rate=conf.get_value(float, 'default', 'sample_rate', default=0),
                 max_traceback_strlen=conf.get_value(int, 'default', 'max_traceback_strlen', default=None),
-                max_sql_strlen=conf.get_value(int, 'default', 'max_query_length', default=10000),
+                max_query_length=conf.get_value(int, 'default', 'max_query_length', default=10000),
                 long_query_time=conf.get_value(int, 'default', 'long_query_time', default=1),
                 long_query_length=conf.get_value(int, 'default', 'long_query_length', default=10000),
             ))

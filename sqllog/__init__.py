@@ -91,7 +91,7 @@ def sqllog_env_file_change_handler(event, env):
     BaseDatabaseWrapper.force_debug_cursor = env['enabled']
     BaseDatabaseWrapper.sample_rate = env['sample_rate']
     BaseDatabaseWrapper.max_traceback_strlen = env['max_traceback_strlen']
-    BaseDatabaseWrapper.max_sql_strlen = env['max_query_length']
+    BaseDatabaseWrapper.max_query_length = env['max_query_length']
     BaseDatabaseWrapper.long_query_time = env['long_query_time']
     BaseDatabaseWrapper.long_query_length = env['long_query_length']
 
