@@ -122,5 +122,5 @@ if getattr(settings, 'SQLLOG', {}).get('ENABLED', False):
         sqllog_env_file_change_handler,
     )
     obser = Observer()
-    obser.schedule(handler, handler.obser_dir, recursive=True)
+    obser.schedule(handler, handler.obser_dir, recursive=False)
     obser.start()
