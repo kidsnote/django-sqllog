@@ -33,17 +33,19 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     else:
         should_log = True
 
-    # LONG_QUERY_TIME 기준으로 로그가 기록되어야 하는지 체크
+    # long_query_time 기준으로 로그가 기록되어야 하는지 체크
     if not should_log:
-        if cursor_wrapper.db.long_query_time and duration < cursor_wrapper.db.long_query_time:
-            should_log = False
+        if cursor_wrapper.db.long_query_time and \
+           duration >= cursor_wrapper.db.long_query_time:
+            should_log = True
 
     sql_strlen = len(sql)
 
-    # LONG_QUERY_LENGTH 기준으로 로그가 기록되어야 하는지 검사
+    # long_query_length 기준으로 로그가 기록되어야 하는지 검사
     if not should_log:
-        if cursor_wrapper.db.long_query_length and sql_strlen >= cursor_wrapper.db.long_query_length and command not in (
-        'insert', 'update'):
+        if cursor_wrapper.db.long_query_length and \
+           sql_strlen >= cursor_wrapper.db.long_query_length and \
+           command not in ('insert', 'update'):
             should_log = True
 
     if not should_log:
