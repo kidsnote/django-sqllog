@@ -24,7 +24,7 @@ class DisableTests(SerializeTestCase):
         self.save_config(
             enabled=False,
             sample_rate=1,
-            max_sql_strlen=None,
+            max_query_length=None,
         )
 
         # Make SQL.
@@ -44,7 +44,7 @@ class EnableTests(SerializeTestCase):
         self.save_config(
             enabled=True,
             sample_rate=1,
-            max_sql_strlen=None,
+            max_query_length=None,
         )
 
         # Make SQL.
@@ -110,7 +110,7 @@ class SampleRateTests(SerializeTestCase):
         self.save_config(
             enabled=True,
             sample_rate=sample_rate,
-            max_sql_strlen=None,
+            max_query_length=None,
         )
 
         print(f'{query_count=},{sample_rate=}')
@@ -135,13 +135,13 @@ class SqlTests(SerializeTestCase):
     def test_sql_max_length_option(self):
         # Set configs.
         random.seed(time.time())
-        max_sql_strlen = random.randint(1, 20)
+        max_query_length = random.randint(1, 20)
 
         # Turn on logging
         self.save_config(
             enabled=True,
             sample_rate=1,
-            max_sql_strlen=max_sql_strlen,
+            max_query_length=max_query_length,
         )
 
         # Make SQL.
@@ -157,14 +157,14 @@ class SqlTests(SerializeTestCase):
 
         for log in logs:
             obj = json.loads(log.split(' ', 3)[-1])
-            assert len(obj['sql']) <= max_sql_strlen
+            assert len(obj['sql']) <= max_query_length
 
     def test_generalization(self):
         # Turn on logging
         self.save_config(
             enabled=True,
             sample_rate=1,
-            max_sql_strlen=None,
+            max_query_length=None,
         )
 
         # Make SQL.

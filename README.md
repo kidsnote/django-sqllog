@@ -129,15 +129,30 @@ SQLLOG = {
     enabled=True
     sample_rate=1
     max_traceback_strlen=100
-    max_sql_strlen=
+    max_query_length=10000
+    long_query_time=1
+    long_query_length=10000
     ```
     * max_traceback_strlen
   
-      기본값은 `None`입니다(Key/Value가 존재하지 않거나 `max_traceback_strlen=`와 같이 설정). traceback 필드의 최대 문자 수를 결정합니다. 
+      기본값은 `None`입니다(Key/Value가 존재하지 않거나 `max_traceback_strlen=`와 같이 설정).  
+      traceback 필드의 최대 문자 수를 결정합니다. 
 
-    * max_sql_strlen
+    * max_query_length
 
-      기본값은 `None`입니다. sql 필드의 최대 문자 수를 결정합니다.
+      기본값은 10000입니다. sql 필드의 최대 문자 수를 결정합니다.  
+      값을 지정하지 않을 경우(No Value) 쿼리문 전체가 저장됩니다.
+
+    * long_query_time
+
+      단위는 초(sec)이고 기본값은 1입니다.  
+      값을 지정할 경우 해당 시간 이상으로 걸린 쿼리만 저장됩니다.
+
+    * long_query_length
+
+      기본값은 10000입니다.  
+      값을 지정할 경우 해당 길이 이상의 쿼리만 저장됩니다.  
+      단, INSERT, UPDATE 명령은 제외합니다.
 
 * Logstash로 직접 로깅할 경우 아래와 같이 설정합니다.
   ```bash
