@@ -13,6 +13,7 @@ from watchdog.observers import Observer
 from .callstack import CallStack
 from .capture import exception, message
 from .handler import EnvFileEventHandler
+from .sql import fingerprint
 from .wrapper import BaseDatabaseWrapper, CursorDebugWrapper
 
 THIS_MODULE_PATH = os.path.dirname(__file__)
@@ -60,8 +61,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
     # NOTE: 트랜잭션 내의 쿼리 중 DB 데이터 락이 걸리는 경우 커밋이 로깅 과정 이후에 이루어지기 때문에
     #       로깅 작업이 오래 걸릴 경우 DB 단에서 "Lock wait timeout"을 발생시킬 수 있음
     #       따라서 로깅의 오버헤드를 최소화하여야 하고 SQL 문을 표준화하는 작업은 여기서 제외함
-    # generalized_sql = fingerprint(sql)
-    # generalized_sql_hash = generalized_sql and md5(generalized_sql.encode()).hexdigest()
+    generalized_sql = fingerprint(sql)
+    generalized_sql_hash = generalized_sql and md5(generalized_sql.encode()).hexdigest()
 
     limited_sql = sql[:cursor_wrapper.db.max_query_length]
 
@@ -75,8 +76,8 @@ def sqllog_handler(cursor_wrapper, *args, **kwargs):
             config=settings.SQLLOG.get('CONFIG_NAME'),
             traceback=tbs,
             traceback_hash=md5(tbs.encode()).hexdigest(),
-            # generalized_sql=generalized_sql,
-            # generalized_sql_hash=generalized_sql_hash,
+            generalized_sql=generalized_sql,
+            generalized_sql_hash=generalized_sql_hash,
             pid=os.getpid(),
             tid=threading.get_ident(),
             native_tid=threading.get_native_id(),
