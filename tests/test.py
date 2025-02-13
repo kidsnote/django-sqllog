@@ -25,6 +25,8 @@ class DisableTests(SerializeTestCase):
             enabled=False,
             sample_rate=1,
             max_query_length=None,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         # Make SQL.
@@ -45,6 +47,8 @@ class EnableTests(SerializeTestCase):
             enabled=True,
             sample_rate=1,
             max_query_length=None,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         # Make SQL.
@@ -62,7 +66,7 @@ class EnableTests(SerializeTestCase):
         # Extract only SQL from the first line.
         sql = json.loads(logs[0][29:])['sql']
 
-        self.assertEquals(
+        self.assertEqual(
             sql,
             'SELECT "tests_category"."id", "tests_category"."title" FROM "tests_category" LIMIT 10'
         )
@@ -78,7 +82,9 @@ class TracebackTests(SerializeTestCase):
         self.save_config(
             enabled=True,
             sample_rate=1,
-            max_traceback_strlen=traceback_max_length
+            max_traceback_strlen=traceback_max_length,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         # Make SQL.
@@ -111,6 +117,8 @@ class SampleRateTests(SerializeTestCase):
             enabled=True,
             sample_rate=sample_rate,
             max_query_length=None,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         print(f'{query_count=},{sample_rate=}')
@@ -142,6 +150,8 @@ class SqlTests(SerializeTestCase):
             enabled=True,
             sample_rate=1,
             max_query_length=max_query_length,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         # Make SQL.
@@ -165,6 +175,8 @@ class SqlTests(SerializeTestCase):
             enabled=True,
             sample_rate=1,
             max_query_length=None,
+            long_query_time=None,
+            long_query_length=None,
         )
 
         # Make SQL.
