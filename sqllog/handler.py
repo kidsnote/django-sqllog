@@ -15,9 +15,9 @@ DEFAULT_ENV = dict(
     enabled=False,
     sample_rate=0,
     max_traceback_strlen=None,
-    max_query_length=10000,
-    long_query_time=1,
-    long_query_length=10000,
+    max_query_length=None,
+    long_query_time=0,
+    long_query_length=0,
 )
 
 
@@ -61,12 +61,12 @@ class EnvFileEventHandler(FileSystemEventHandler):
             conf = Config()
             conf.read(self.obser_file)
             env.update(dict(
-                enabled=conf.get_value(bool, 'default', 'enabled', default=False),
-                sample_rate=conf.get_value(float, 'default', 'sample_rate', default=0),
-                max_traceback_strlen=conf.get_value(int, 'default', 'max_traceback_strlen', default=None),
-                max_query_length=conf.get_value(int, 'default', 'max_query_length', default=10000),
-                long_query_time=conf.get_value(int, 'default', 'long_query_time', default=1),
-                long_query_length=conf.get_value(int, 'default', 'long_query_length', default=10000),
+                enabled=conf.get_value(bool, 'default', 'enabled'),
+                sample_rate=conf.get_value(float, 'default', 'sample_rate'),
+                max_traceback_strlen=conf.get_value(int, 'default', 'max_traceback_strlen'),
+                max_query_length=conf.get_value(int, 'default', 'max_query_length'),
+                long_query_time=conf.get_value(int, 'default', 'long_query_time'),
+                long_query_length=conf.get_value(int, 'default', 'long_query_length'),
             ))
         except Exception as e:
             # Reporting and disable logging when unknown exception raised.
