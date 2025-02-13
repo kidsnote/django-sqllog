@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-sqllog',
-    version='0.0.3',
+    version='0.0.4',
     description='SQL query logger for Django application.',
     url='https://github.com/kncray/django-sqllog',
     author='cray',
