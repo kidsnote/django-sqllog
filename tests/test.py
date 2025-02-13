@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import time
 from subprocess import Popen, PIPE
@@ -8,7 +9,7 @@ from .models import (
 )
 from .utils import SerializeTestCase
 
-DEVNULL = open('/dev/null', 'w')
+DEVNULL = open(os.devnull, 'w')
 
 
 class DisableTests(SerializeTestCase):
