@@ -1,3 +1,4 @@
+import logging
 import os
 
 from watchdog.events import (
@@ -8,8 +9,9 @@ from watchdog.events import (
     EVENT_TYPE_MOVED,
 )
 
-from .capture import exception
 from .config import Config
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_ENV = dict(
     enabled=False,
@@ -70,6 +72,6 @@ class EnvFileEventHandler(FileSystemEventHandler):
             ))
         except Exception as e:
             # Reporting and disable logging when unknown exception raised.
-            exception(e)
+            logger.exception(e)
 
         self.event_handler and self.event_handler(event, env)

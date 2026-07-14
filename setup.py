@@ -13,7 +13,6 @@ setup(
     ],
     install_requires=[
         'python-logstash>=0.4.8',
-        'sentry-sdk>=1.11.1',
         'watchdog>=2.1.9',
     ],
     classifiers=[

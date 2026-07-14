@@ -62,7 +62,6 @@ USE_TZ = True
 
 SQLLOG = {
     'ENABLED': os.getenv('SQLLOG_ENABLED', True),
-    'ENABLE_SENTRY': os.getenv('SQLLOG_ENABLE_SENTRY', False),
     'CONFIG_NAME': 'testing',
     'ENV_FILE_PATH': f'{BASE_DIR}/runtime/sqllog.ini',
     'LOGGING': {

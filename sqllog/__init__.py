@@ -11,7 +11,6 @@ from django.utils.log import configure_logging
 from watchdog.observers import Observer
 
 from .callstack import CallStack
-from .capture import exception, message
 from .handler import EnvFileEventHandler
 from .wrapper import BaseDatabaseWrapper, CursorDebugWrapper
 
